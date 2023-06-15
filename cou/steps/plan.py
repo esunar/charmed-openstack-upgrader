@@ -73,7 +73,7 @@ def generate_plan(analyze_result: Analyze) -> UpgradeStep:
     control_plane.add_step(
         UpgradeStep(
             description="Upgrade without action-managed-upgrade cinder",
-            parallel=False,
+            parallel=True,
             function=component_upgrade,
             app="cinder",
             old_origin="distro",
@@ -84,7 +84,7 @@ def generate_plan(analyze_result: Analyze) -> UpgradeStep:
     control_plane.add_step(
         UpgradeStep(
             description="Upgrade without action-managed-upgrade glance",
-            parallel=False,
+            parallel=True,
             function=component_upgrade,
             app="glance",
             old_origin="distro",
@@ -95,7 +95,7 @@ def generate_plan(analyze_result: Analyze) -> UpgradeStep:
     control_plane.add_step(
         UpgradeStep(
             description="Upgrade without action-managed-upgrade placement",
-            parallel=False,
+            parallel=True,
             function=component_upgrade,
             app="placement",
             old_origin="distro",
@@ -106,7 +106,7 @@ def generate_plan(analyze_result: Analyze) -> UpgradeStep:
     control_plane.add_step(
         UpgradeStep(
             description="Upgrade without action-managed-upgrade nova-cloud-controller",
-            parallel=False,
+            parallel=True,
             function=component_upgrade,
             app="nova-cloud-controller",
             old_origin="distro",
@@ -117,7 +117,7 @@ def generate_plan(analyze_result: Analyze) -> UpgradeStep:
     control_plane.add_step(
         UpgradeStep(
             description="Upgrade without action-managed-upgrade neutron-api",
-            parallel=False,
+            parallel=True,
             function=component_upgrade,
             app="neutron-api",
             old_origin="distro",
@@ -128,7 +128,7 @@ def generate_plan(analyze_result: Analyze) -> UpgradeStep:
     control_plane.add_step(
         UpgradeStep(
             description="Upgrade without action-managed-upgrade neutron-gateway",
-            parallel=False,
+            parallel=True,
             function=component_upgrade,
             app="neutron-gateway",
             old_origin="distro",
@@ -136,7 +136,7 @@ def generate_plan(analyze_result: Analyze) -> UpgradeStep:
             channel=VICTORIA_STABLE,
         )
     )
-    control_plane.add_step(
+    plan.add_step(
         UpgradeStep(
             description="wait for upgrade",
             parallel=False,
@@ -191,9 +191,13 @@ def apply_plan(upgrade_plan: Any) -> None:
                 logging.info("No valid input provided!")
 
 
+# pylint: disable=W1203
 def dump_plan(upgrade_plan: UpgradeStep, ident: int = 0) -> None:
     """Dump the plan for upgrade."""
     tab = "\t"
-    logging.info(f"{tab * ident}{upgrade_plan.description}")  # pylint: disable=W1203
+    logging.info(
+        f"{tab * ident}{upgrade_plan.description} \
+        {'(parallel)' if upgrade_plan.parallel else '(serial)'}"
+    )
     for sub_step in upgrade_plan.sub_steps:
         dump_plan(sub_step, ident + 1)
