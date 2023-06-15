@@ -19,6 +19,7 @@ import logging
 import sys
 from typing import Any
 
+from cou.steps.analyze import analyze
 from cou.steps.plan import apply_plan, dump_plan, generate_plan
 from cou.zaza_utils import clean_up_libjuju_thread
 
@@ -73,7 +74,8 @@ def entrypoint() -> int:
         args = parse_args(sys.argv[1:])
         setup_logging(log_level=args.loglevel)
 
-        upgrade_plan = generate_plan(args)
+        analyze_result = analyze()
+        upgrade_plan = generate_plan(analyze_result)
         if args.dry_run:
             dump_plan(upgrade_plan)
         else:

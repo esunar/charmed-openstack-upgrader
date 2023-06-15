@@ -17,12 +17,12 @@
 
 import logging
 import sys
-from argparse import Namespace
 from typing import Any
 
 from termcolor import colored
 
 from cou.steps import UpgradeStep
+from cou.steps.analyze import Analyze
 from cou.steps.backup import backup
 from cou.steps.charm_operation import component_upgrade
 from cou.zaza_utils.model import block_until_all_units_idle
@@ -34,9 +34,11 @@ VICTORIA_STABLE = "victoria/stable"
 AVAILABLE_OPTIONS = "cas"
 
 
-def generate_plan(args: Namespace) -> UpgradeStep:
+def generate_plan(analyze_result: Analyze) -> UpgradeStep:
     """Generate plan for upgrade."""
-    logging.info(args)  # for placeholder
+    if analyze_result is not None:
+        logging.info("Plan is being generated according to result.")
+
     plan = UpgradeStep(description="Top level plan", parallel=False, function=None)
     plan.add_step(
         UpgradeStep(description="backup mysql databases", parallel=False, function=backup)
