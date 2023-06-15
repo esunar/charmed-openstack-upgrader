@@ -28,6 +28,7 @@ class UpgradeStep:
         description: str,
         parallel: bool,
         function: Optional[Callable],
+        confirmation: bool = True,
         **params: Optional[Any],
     ):
         """Initialize upgrade step."""
@@ -36,10 +37,12 @@ class UpgradeStep:
         self.sub_steps: List[UpgradeStep] = list[UpgradeStep]()
         self.params = params
         self.function = function
+        self.confirmation = confirmation
 
-    def add_step(self, step: UpgradeStep) -> None:
+    def add_step(self, step: UpgradeStep) -> UpgradeStep:
         """Add a single step."""
         self.sub_steps.append(step)
+        return step
 
     def run(self) -> Any:
         """Run the function."""
