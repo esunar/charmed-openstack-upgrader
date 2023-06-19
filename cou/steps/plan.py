@@ -20,12 +20,12 @@ import sys
 from typing import Any
 
 from termcolor import colored
+from zaza.model import block_until_all_units_idle
 
 from cou.steps import UpgradeStep
 from cou.steps.analyze import Analyze
 from cou.steps.backup import backup
 from cou.steps.charm_operation import component_upgrade
-from cou.zaza_utils.model import block_until_all_units_idle
 
 CLOUD_FOCAL_VICTORIA = "cloud:focal-victoria"
 

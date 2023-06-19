@@ -19,9 +19,10 @@ import logging
 import sys
 from typing import Any
 
+from zaza import clean_up_libjuju_thread
+
 from cou.steps.analyze import analyze
 from cou.steps.plan import apply_plan, dump_plan, generate_plan
-from cou.zaza_utils import clean_up_libjuju_thread
 
 
 def parse_args(args: Any) -> argparse.Namespace:

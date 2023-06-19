@@ -18,7 +18,7 @@ import logging
 import subprocess
 from typing import Any
 
-from cou.zaza_utils.model import (
+from zaza.model import (
     CURRENT_MODEL,
     get_application_config,
     set_application_config,

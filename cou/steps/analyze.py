@@ -25,12 +25,11 @@ import yaml
 from colorama import Fore, Style
 from colorama import init as colorama_init
 from juju.client._definitions import ApplicationStatus
-
-from cou.zaza_utils import model
-from cou.zaza_utils.juju import get_full_juju_status
-from cou.zaza_utils.openstack import CHARM_TYPES, get_os_code_info
-from cou.zaza_utils.os_versions import CompareOpenStack
-from cou.zaza_utils.upgrade_utils import determine_next_openstack_release
+from zaza import model
+from zaza.openstack.utilities.openstack import CHARM_TYPES, get_os_code_info
+from zaza.openstack.utilities.os_versions import CompareOpenStack
+from zaza.openstack.utilities.upgrade_utils import determine_next_openstack_release
+from zaza.utilities.juju import get_full_juju_status
 
 colorama_init()
 

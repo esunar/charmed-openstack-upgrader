@@ -18,8 +18,8 @@ import logging
 import os
 from typing import Optional
 
-from cou.zaza_utils import model
-from cou.zaza_utils.upgrade_utils import (
+from zaza import model
+from zaza.openstack.utilities.upgrade_utils import (
     extract_charm_name_from_url,
     get_upgrade_candidates,
 )
