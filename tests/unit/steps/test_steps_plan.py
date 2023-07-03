@@ -18,7 +18,14 @@ from unittest.mock import AsyncMock, MagicMock, call, patch
 import pytest
 
 from cou.steps.backup import backup
-from cou.steps.plan import apply_plan, dump_plan, generate_plan, prompt
+from cou.steps.plan import (
+    apply_plan,
+    apply_plan_interactive,
+    apply_plan_non_interactive,
+    dump_plan,
+    generate_plan,
+    prompt,
+)
 
 
 def test_generate_plan():
@@ -47,7 +54,7 @@ async def test_apply_plan_continue():
 
     with patch("cou.steps.plan.input") as mock_input, patch("cou.steps.plan.sys") as mock_sys:
         mock_input.return_value = "C"
-        await apply_plan(upgrade_plan)
+        await apply_plan_interactive(upgrade_plan)
 
         mock_input.assert_called_with(prompt("Test Plan"))
         assert upgrade_plan.run.call_count == 1
@@ -63,7 +70,7 @@ async def test_apply_plan_abort():
     with patch("cou.steps.plan.input") as mock_input:
         mock_input.return_value = "a"
         with pytest.raises(SystemExit):
-            await apply_plan(upgrade_plan)
+            await apply_plan_interactive(upgrade_plan)
 
         mock_input.assert_called_once_with(prompt("Test Plan"))
         upgrade_plan.function.assert_not_called()
@@ -79,7 +86,7 @@ async def test_apply_plan_nonsense():
             "cou.steps.plan.logging.info"
         ) as log:
             mock_input.side_effect = ["x", "a"]
-            await apply_plan(upgrade_plan)
+            await apply_plan_interactive(upgrade_plan)
 
             log.assert_called_once_with("No valid input provided!")
             mock_input.assert_called_once_with(prompt("Test Plan"))
@@ -96,7 +103,7 @@ async def test_apply_plan_skip():
 
     with patch("cou.steps.plan.input") as mock_input, patch("cou.steps.plan.sys") as mock_sys:
         mock_input.return_value = "s"
-        await apply_plan(upgrade_plan)
+        await apply_plan_interactive(upgrade_plan)
 
         upgrade_plan.function.assert_not_called()
         mock_sys.exit.assert_not_called()
@@ -110,8 +117,47 @@ def test_dump_plan():
     sub_step.sub_steps = []
     upgrade_plan.sub_steps = [sub_step]
 
-    with patch("cou.steps.plan.logging.info") as mock_print:
+    with patch("builtins.print") as mock_print:
         dump_plan(upgrade_plan)
 
         mock_print.assert_has_calls([call("Test Plan"), call("\tSub Step")])
         mock_print.call_count = 2
+
+
+@pytest.mark.asyncio
+async def test_apply_plan():
+    upgrade_plan = MagicMock()
+    upgrade_plan.description = "Test Plan"
+    sub_step = MagicMock()
+    sub_step.description = "Sub Step"
+    sub_step.sub_steps = []
+    upgrade_plan.sub_steps = [sub_step]
+
+    with patch("cou.steps.plan.apply_plan_interactive") as interactive, patch(
+        "cou.steps.plan.apply_plan_non_interactive"
+    ) as noninteractive:
+        await apply_plan(upgrade_plan, True)
+        await apply_plan(upgrade_plan, False)
+
+        interactive.assert_called_once()
+        noninteractive.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_apply_plan_non_interactive():
+    upgrade_plan = MagicMock()
+    upgrade_plan.description = "Test Plan"
+    upgrade_plan.run = AsyncMock()
+    sub_step = MagicMock()
+    sub_step.run = AsyncMock()
+    sub_step.description = "Sub Step"
+    sub_step.sub_steps = []
+    upgrade_plan.sub_steps = [sub_step]
+
+    with patch("builtins.print") as mock_print:
+        await apply_plan_non_interactive(upgrade_plan)
+
+        mock_print.assert_has_calls([call("Test Plan"), call("\tSub Step")])
+        mock_print.call_count = 2
+        assert upgrade_plan.run.call_count == 1
+        assert sub_step.run.call_count == 1

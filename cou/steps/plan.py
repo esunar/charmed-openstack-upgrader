@@ -57,8 +57,16 @@ def prompt(parameter: str) -> str:
     )
 
 
-async def apply_plan(upgrade_plan: UpgradeStep) -> None:
+async def apply_plan(upgrade_plan: UpgradeStep, interactive: bool) -> None:
     """Apply the plan for upgrade."""
+    if interactive:
+        await apply_plan_interactive(upgrade_plan)
+    else:
+        await apply_plan_non_interactive(upgrade_plan)
+
+
+async def apply_plan_interactive(upgrade_plan: UpgradeStep) -> None:
+    """Apply the plan for interactive upgrade."""
     result = "X"
     while result.casefold() not in AVAILABLE_OPTIONS:
         result = input(prompt(upgrade_plan.description)).casefold()
@@ -66,7 +74,7 @@ async def apply_plan(upgrade_plan: UpgradeStep) -> None:
             case "c":
                 await upgrade_plan.run()
                 for sub_step in upgrade_plan.sub_steps:
-                    await apply_plan(sub_step)
+                    await apply_plan_interactive(sub_step)
             case "a":
                 logging.info("Aborning plan")
                 sys.exit(1)
@@ -76,9 +84,18 @@ async def apply_plan(upgrade_plan: UpgradeStep) -> None:
                 logging.info("No valid input provided!")
 
 
+async def apply_plan_non_interactive(upgrade_plan: UpgradeStep, ident: int = 0) -> None:
+    """Apply the plan for non-interactive upgrade."""
+    tab = "\t"
+    print(f"{tab * ident}{upgrade_plan.description}")  # pylint: disable=W1203
+    await upgrade_plan.run()
+    for sub_step in upgrade_plan.sub_steps:
+        await apply_plan_non_interactive(sub_step, ident + 1)
+
+
 def dump_plan(upgrade_plan: UpgradeStep, ident: int = 0) -> None:
     """Dump the plan for upgrade."""
     tab = "\t"
-    logging.info(f"{tab * ident}{upgrade_plan.description}")  # pylint: disable=W1203
+    print(f"{tab * ident}{upgrade_plan.description}")  # pylint: disable=W1203
     for sub_step in upgrade_plan.sub_steps:
         dump_plan(sub_step, ident + 1)
